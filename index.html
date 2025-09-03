@@ -1,0 +1,371 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Chatroom — Free & Neon</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>@import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;600;800&display=swap');
+
+:root{
+  --bg0: #0b1220;
+  --glass: rgba(255,255,255,0.08);
+  --stroke: rgba(255,255,255,0.14);
+  --txt: #e9f1ff;
+  --muted: #a9b4c7;
+  --accent1: #00e5ff;
+  --accent2: #ff00d4;
+  --danger: #ff4d6d;
+}
+
+*{ box-sizing: border-box; }
+html, body{ height:100%; }
+body{
+  margin:0; background: radial-gradient(1200px 800px at 15% 20%, #11203a, transparent),
+                       radial-gradient(1000px 700px at 85% 80%, #1a0f2b, transparent),
+                       var(--bg0);
+  color: var(--txt);
+  font-family: 'Vazirmatn', system-ui, sans-serif;
+}
+
+.bg-orbs::before, .bg-orbs::after{
+  content:''; position: fixed; width: 380px; height: 380px; filter: blur(80px);
+  border-radius: 50%;
+  z-index: 0; opacity: 0.35;
+}
+.bg-orbs::before{ background: var(--accent1); top: 10%; left: 6%; }
+.bg-orbs::after{ background: var(--accent2); bottom: 8%; right: 6%; }
+
+.app{
+  position: relative; z-index: 1;
+  max-width: 1100px; margin: 40px auto; padding: 0 16px;
+}
+
+.card{
+  background: linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0.03));
+  border: 1px solid var(--stroke);
+  border-radius: 18px;
+  backdrop-filter: blur(14px);
+  box-shadow: 0 20px 60px rgba(0,0,0,0.35);
+  padding: 20px;
+}
+
+.join{ max-width: 560px; margin: 40px auto; text-align: center; }
+.join h1{ margin: 0 0 6px; font-weight: 800; letter-spacing: -0.5px; }
+.sub{ color: var(--muted); margin: 0 0 20px; }
+
+label{ display:block; text-align: right; margin: 12px 0; color: var(--muted); font-size: 14px; }
+input, textarea{
+  width: 100%; margin-top: 6px; padding: 12px 14px; border-radius: 12px;
+  border: 1px solid var(--stroke);
+  background: rgba(255,255,255,0.06); color: var(--txt); outline: none;
+}
+input:focus, textarea:focus{ border-color: var(--accent1); box-shadow: 0 0 0 3px rgba(0,229,255,0.18); }
+
+.btn{
+  border: 1px solid var(--stroke);
+  background: rgba(255,255,255,0.04);
+  color: var(--txt); padding: 10px 14px; border-radius: 12px; cursor: pointer;
+}
+.btn.primary{
+  background: linear-gradient(90deg, var(--accent1), var(--accent2));
+  border: none; color: #001018; font-weight: 700;
+}
+.btn.ghost{ background: transparent; }
+.btn.danger{ background: transparent; border-color: var(--danger); color: var(--danger); }
+
+.hidden{ display:none; }
+
+.chatHeader{
+  display:flex; align-items:center; justify-content: space-between; gap: 12px; margin-bottom: 16px;
+}
+.title h2{ margin:0; }
+.pill{
+  display:inline-block; margin-top:6px; font-size:12px; padding:4px 10px; border-radius: 999px;
+  background: rgba(255,255,255,0.08); border:1px solid var(--stroke); color: var(--muted);
+}
+
+.columns{ display: grid; grid-template-columns: 260px 1fr; gap: 16px; }
+.sidebar{
+  background: rgba(255,255,255,0.05); border:1px solid var(--stroke);
+  border-radius: 14px; padding: 12px;
+}
+.sidebar h3{ margin: 0 0 8px; font-size: 16px; color: var(--muted); }
+#usersList{ list-style: none; margin:0; padding:0; display: grid; gap: 6px; }
+.user{
+  display: grid; gap: 2px; padding: 8px; border-radius: 10px;
+  background: rgba(0,0,0,0.12); border:1px solid rgba(255,255,255,0.08);
+}
+.user .name{ font-weight: 700; }
+.user .about{ font-size: 12px; color: var(--muted); }
+
+.messages{
+  background: rgba(255,255,255,0.04); border:1px solid var(--stroke);
+  border-radius: 14px; padding: 0; display: grid; grid-template-rows: 1fr auto; height: 68vh;
+}
+#msgs{ list-style: none; margin:0; padding: 14px; overflow-y: auto; display: grid; gap: 10px; }
+.msg{
+  padding: 10px 12px; border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.08);
+  background: rgba(0,0,0,0.18);
+}
+.msg .meta{ font-size: 12px; color: var(--muted); margin-bottom: 4px; }
+.msg.self{ background: linear-gradient(90deg, rgba(0,229,255,0.12), rgba(255,0,212,0.12)); }
+.msg.system{ color: #c7d2e0; font-style: italic; background: transparent; border: none; text-align: center; }
+
+.msgForm{ display: grid; grid-template-columns: 1fr auto; gap: 8px; padding: 10px; }
+.msgForm input{ border-radius: 999px; }
+
+dialog{
+  border: 1px solid var(--stroke); border-radius: 14px; background: rgba(25,28,40,0.9);
+  color: var(--txt); padding: 16px; width: min(520px, 92vw);
+}
+dialog::backdrop{ background: rgba(0,0,0,0.5); }
+.row{ display:flex; gap: 8px; justify-content: flex-end; margin-top: 10px; }
+
+@media (max-width: 900px){
+  .columns{ grid-template-columns: 1fr; }
+  .messages{ height: 70vh; }
+}</style>
+
+</head>
+<body>
+  <div class="bg-orbs"></div>
+
+  <main class="app">
+    <section class="card join" id="joinCard">
+      <h1>چت‌روم نئونی</h1>
+      <p class="sub">بدون Firebase، رایگان، سبک</p>
+
+      <form id="joinForm">
+        <label>نام کاربری
+          <input id="nameInput" type="text" placeholder="مثلاً: سارا" required />
+        </label>
+
+        <label>نام اتاق
+          <input id="roomInput" type="text" placeholder="مثلاً: doha" required />
+        </label>
+
+        <label>About Me
+          <textarea id="aboutInput" rows="3" placeholder="چند جمله درباره‌ی خودت..."></textarea>
+        </label>
+
+        <label>WebSocket Server
+          <input id="wsInput" type="text" placeholder="ws://localhost:8080" />
+        </label>
+
+        <button type="submit" class="btn primary">ورود به اتاق</button>
+      </form>
+    </section>
+
+    <section class="card chat hidden" id="chatCard">
+      <header class="chatHeader">
+        <div class="title">
+          <h2 id="roomTitle">اتاق</h2>
+          <span class="pill" id="youPill"></span>
+        </div>
+        <div class="actions">
+          <button id="editAboutBtn" class="btn ghost">ویرایش پروفایل</button>
+          <button id="leaveBtn" class="btn danger">خروج</button>
+        </div>
+      </header>
+
+      <div class="columns">
+        <aside class="sidebar">
+          <h3>کاربران</h3>
+          <ul id="usersList"></ul>
+        </aside>
+
+        <section class="messages">
+          <ul id="msgs"></ul>
+          <form id="msgForm" class="msgForm">
+            <input id="msgInput" type="text" placeholder="پیامت رو بنویس..." autocomplete="off" />
+            <button class="btn primary">ارسال</button>
+          </form>
+        </section>
+      </div>
+    </section>
+
+    <dialog id="aboutDialog">
+      <form method="dialog" id="aboutForm">
+        <h3>ویرایش About Me</h3>
+        <textarea id="aboutEdit" rows="5" maxlength="300"></textarea>
+        <div class="row">
+          <button class="btn ghost">بستن</button>
+          <button class="btn primary" id="saveAboutBtn">ذخیره</button>
+        </div>
+      </form>
+    </dialog>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+<script>// script.js
+(() => {
+  const joinCard = document.getElementById('joinCard');
+  const chatCard = document.getElementById('chatCard');
+  const joinForm = document.getElementById('joinForm');
+  const nameInput = document.getElementById('nameInput');
+  const roomInput = document.getElementById('roomInput');
+  const aboutInput = document.getElementById('aboutInput');
+  const wsInput = document.getElementById('wsInput');
+
+  const roomTitle = document.getElementById('roomTitle');
+  const youPill = document.getElementById('youPill');
+  const usersList = document.getElementById('usersList');
+  const msgs = document.getElementById('msgs');
+  const msgForm = document.getElementById('msgForm');
+  const msgInput = document.getElementById('msgInput');
+  const leaveBtn = document.getElementById('leaveBtn');
+  const editAboutBtn = document.getElementById('editAboutBtn');
+  const aboutDialog = document.getElementById('aboutDialog');
+  const aboutEdit = document.getElementById('aboutEdit');
+  const saveAboutBtn = document.getElementById('saveAboutBtn');
+
+  let ws = null;
+  let my = {
+    name: localStorage.getItem('name') || '',
+    about: localStorage.getItem('about') || '',
+    room: '',
+    server: localStorage.getItem('server') || 'ws://localhost:8080'
+  };
+
+  // Prefill form
+  nameInput.value = my.name;
+  aboutInput.value = my.about;
+  wsInput.value = my.server;
+
+  function connect() {
+    ws = new WebSocket(my.server);
+
+    ws.addEventListener('open', () => {
+      ws.send(JSON.stringify({
+        type: 'join',
+        room: my.room,
+        name: my.name,
+        about: my.about
+      }));
+    });
+
+    ws.addEventListener('message', (ev) => {
+      let data;
+      try { data = JSON.parse(ev.data); } catch { return; }
+
+      if (data.type === 'system') {
+        renderSystem(data.text);
+      }
+
+      if (data.type === 'users') {
+        renderUsers(data.users);
+      }
+
+      if (data.type === 'chat') {
+        renderMsg(data);
+      }
+    });
+
+    ws.addEventListener('close', () => {
+      renderSystem('ارتباط قطع شد. دوباره تلاش کنید یا سرور رو بررسی کنید.');
+    });
+  }
+
+  function renderSystem(text) {
+    const li = document.createElement('li');
+    li.className = 'msg system';
+    li.textContent = text;
+    msgs.appendChild(li);
+    msgs.scrollTop = msgs.scrollHeight;
+  }
+
+  function renderUsers(users) {
+    usersList.innerHTML = '';
+    users.forEach(u => {
+      const li = document.createElement('li');
+      li.className = 'user';
+      const name = document.createElement('div');
+      name.className = 'name';
+      name.textContent = u.name || 'ناشناس';
+
+      const about = document.createElement('div');
+      about.className = 'about';
+      about.textContent = u.about || '';
+
+      li.appendChild(name);
+      if (u.about) li.appendChild(about);
+      usersList.appendChild(li);
+    });
+  }
+
+  function renderMsg({ from, text, ts, about }) {
+    const li = document.createElement('li');
+    li.className = 'msg' + (from === my.name ? ' self' : '');
+    const meta = document.createElement('div');
+    meta.className = 'meta';
+    const time = new Date(ts || Date.now()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    meta.textContent = `${from} • ${time}`;
+    const body = document.createElement('div');
+    body.className = 'body';
+    body.textContent = text;
+    li.appendChild(meta);
+    li.appendChild(body);
+
+    // Tooltip-like about (title attribute)
+    if (about) li.title = `About: ${about}`;
+
+    msgs.appendChild(li);
+    msgs.scrollTop = msgs.scrollHeight;
+  }
+
+  joinForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    my.name = nameInput.value.trim() || 'کاربر';
+    my.room = roomInput.value.trim() || 'public';
+    my.about = aboutInput.value.trim();
+    my.server = (wsInput.value.trim() || 'ws://localhost:8080');
+
+    localStorage.setItem('name', my.name);
+    localStorage.setItem('about', my.about);
+    localStorage.setItem('server', my.server);
+
+    roomTitle.textContent = `اتاق ${my.room}`;
+    youPill.textContent = `تو: ${my.name}`;
+    joinCard.classList.add('hidden');
+    chatCard.classList.remove('hidden');
+
+    connect();
+  });
+
+  msgForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const text = msgInput.value.trim();
+    if (!text || !ws || ws.readyState !== WebSocket.OPEN) return;
+    ws.send(JSON.stringify({ type: 'chat', room: my.room, text }));
+    msgInput.value = '';
+  });
+
+  leaveBtn.addEventListener('click', () => {
+    if (ws) {
+      ws.close();
+      ws = null;
+    }
+    chatCard.classList.add('hidden');
+    joinCard.classList.remove('hidden');
+  });
+
+  editAboutBtn.addEventListener('click', () => {
+    aboutEdit.value = my.about;
+    aboutDialog.showModal();
+  });
+
+  saveAboutBtn.addEventListener('click', (e) => {
+    e.preventDefault();
+    const newAbout = aboutEdit.value.trim();
+    my.about = newAbout;
+    localStorage.setItem('about', my.about);
+    if (ws && ws.readyState === WebSocket.OPEN) {
+      ws.send(JSON.stringify({ type: 'update-about', about: my.about }));
+    }
+    aboutDialog.close();
+  });
+})();</script>
+</html>
